@@ -3,12 +3,6 @@ import { createClient } from "@/utils/supabase/server";
 import type { NextRequest } from "next/server";
 import { getUserAndRole } from "@/utils/auth/get-user-role";
 
-type Context = {
-  params: {
-    id: string;
-  };
-};
-
 export async function GET(_: NextRequest) {
   const supabase = await createClient();
   const { user, role } = await getUserAndRole();
@@ -42,7 +36,7 @@ export async function GET(_: NextRequest) {
   return NextResponse.json(data, { status: 200 });
 }
 
-export async function PUT(req: NextRequest, context: Context) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient();
   const { user, role } = await getUserAndRole();
   if (!user)
@@ -53,7 +47,7 @@ export async function PUT(req: NextRequest, context: Context) {
   }
 
   const body = await req.json();
-  const { id } = await context.params;
+  const { id } = await params;
 
   const { error } = await supabase
     .from("projects")
@@ -67,7 +61,7 @@ export async function PUT(req: NextRequest, context: Context) {
   return NextResponse.json({ message: "Project updated" });
 }
 
-export async function DELETE(_: NextRequest, context: Context) {
+export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
   const supabase = await createClient();
   const { user, role } = await getUserAndRole();
   if (!user)
@@ -77,7 +71,7 @@ export async function DELETE(_: NextRequest, context: Context) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const { id } = await context.params;
+  const { id } = await params;
 
   const { error } = await supabase.from("projects").delete().eq("id", id);
 

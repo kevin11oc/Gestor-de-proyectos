@@ -1,7 +1,7 @@
 import ProjectForm from "@/components/project-form";
 
-interface Props {
-  params: { id: string };
+type Props = {
+  params: Promise<{ id: string }>
 }
 
 export default async function EditProjectPage({ params }: Props) {
@@ -9,4 +9,3 @@ export default async function EditProjectPage({ params }: Props) {
 
   return <ProjectForm projectId={id} />;
 }
-

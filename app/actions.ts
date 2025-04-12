@@ -8,18 +8,16 @@ import { redirect } from "next/navigation";
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
+  const name = formData.get("name")?.toString();
+  const role = formData.get("role")?.toString();
   const supabase = await createClient();
   const origin = (await headers()).get("origin");
 
-  if (!email || !password) {
-    return encodedRedirect(
-      "error",
-      "/sign-up",
-      "Email and password are required",
-    );
+  if (!email || !password || !name || !role) {
+    return encodedRedirect("error", "/sign-up", "Todos los campos son obligatorios");
   }
 
-  const { error } = await supabase.auth.signUp({
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -27,16 +25,33 @@ export const signUpAction = async (formData: FormData) => {
     },
   });
 
-  if (error) {
-    console.error(error.code + " " + error.message);
-    return encodedRedirect("error", "/sign-up", error.message);
-  } else {
-    return encodedRedirect(
-      "success",
-      "/sign-up",
-      "Thanks for signing up! Please check your email for a verification link.",
-    );
+  if (signUpError) {
+    console.error(signUpError.code + " " + signUpError.message);
+    return encodedRedirect("error", "/sign-up", signUpError.message);
   }
+
+  const userId = signUpData.user?.id;
+
+  if (!userId) {
+    return encodedRedirect("error", "/sign-up", "No se pudo obtener el ID del usuario");
+  }
+
+  const { error: profileError } = await supabase.from("profiles").insert({
+    id: userId,
+    name,
+    role,
+  });
+
+  if (profileError) {
+    console.error("Profile creation error:", profileError.message);
+    return encodedRedirect("error", "/sign-up", "No se pudo guardar el perfil");
+  }
+
+  return encodedRedirect(
+    "success",
+    "/sign-in",
+    "Gracias por registrarte. Verifica tu correo electrónico."
+  );
 };
 
 export const signInAction = async (formData: FormData) => {
@@ -53,7 +68,7 @@ export const signInAction = async (formData: FormData) => {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  return redirect("/protected");
+  return redirect("/projects");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

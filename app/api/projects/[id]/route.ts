@@ -36,7 +36,7 @@ export async function GET(_: NextRequest) {
   return NextResponse.json(data, { status: 200 });
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }>}) {
   const supabase = await createClient();
   const { user, role } = await getUserAndRole();
   if (!user)
@@ -61,7 +61,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json({ message: "Project updated" });
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const { user, role } = await getUserAndRole();
   if (!user)
